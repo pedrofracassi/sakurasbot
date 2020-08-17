@@ -1,7 +1,8 @@
 const axios = require('axios').default
+const fs = require('fs')
 
 module.exports = class TwitchAPI {
-  constructor ({ logger } = {}) {
+  constructor ({ logger, streamers } = {}) {
     this.logger = logger || console
 
     this.clientId = process.env.TWITCH_CLIENT_ID
@@ -19,7 +20,7 @@ module.exports = class TwitchAPI {
     this.apiAxios = axios.create({
       baseURL: this.apiBaseURL
     })
-    
+
     this.apiAxios.interceptors.request.use(async config => {
       if (Date.now() > this.accessTokenExpiry) await this.refreshAccessToken()
       config.headers = {
@@ -33,7 +34,7 @@ module.exports = class TwitchAPI {
       return response
     }, async error => {
       const requestConfig = error.config
-      if (error.response.status === 403 && !requestConfig.hasBeenRetried) {
+      if (error.response && error.response.status === 403 && !requestConfig.hasBeenRetried) {
         request.hasBeenRetried = true
         await this.refreshAccessToken()
         requestConfig.headers = {
@@ -44,6 +45,10 @@ module.exports = class TwitchAPI {
       }
       return Promise.reject(error)
     })
+
+    this.logger.info('Loading streamers...')
+    this.streamers = fs.readFileSync('streamers.txt').toString().split('\r\n')
+    this.logger.info(`Loaded ${this.streamers.length} streamers`)
   }
 
   async refreshAccessToken () {
@@ -59,17 +64,17 @@ module.exports = class TwitchAPI {
     })
   }
 
-  async getOnlineStreams (usernames) {
+  async getOnlineStreams () {
     return this.apiAxios.get('/streams', {
-      params: usernames.reduce((previous, current) => {
+      params: this.streamers.reduce((previous, current) => {
         previous.append('user_login', current)
         return previous
       }, new URLSearchParams())
     }).then(res => res.data.data)
   }
 
-  async getRandomOnlinestream (usernames) {
-    const streams = await this.getOnlineStreams(usernames)
+  async getRandomOnlineStream () {
+    const streams = await this.getOnlineStreams()
     if (streams.length === 0) return null
     return (streams[Math.floor(Math.random() * streams.length)])
   }

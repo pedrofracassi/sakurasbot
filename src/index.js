@@ -1,15 +1,23 @@
-const fs = require('fs')
+const winston = require('winston')
+const logger = winston.createLogger()
 
-console.log('Loading streamer list...')
-
-const streamers = fs.readFileSync('streamers.txt').toString().split('\n')
-
-console.log(`Loaded ${streamers.length} streamers`)
+logger.add(new winston.transports.Console({
+  format: winston.format.combine(
+    winston.format.colorize(),
+    winston.format.simple()
+  ),
+  level: process.env.LOGGING_LEVEL || 'silly'
+}))
 
 const TwitchAPI = require('./TwitchAPI')
-const twitch = new TwitchAPI(streamers)
+const twitch = new TwitchAPI({ logger })
 
 const SakurasDiscordBot = require('./SakurasDiscordBot')
-const discord = new SakurasDiscordBot({ twitch })
+const discordClient = new SakurasDiscordBot({ twitch, logger })
 
-discord.login(process.env.DISCORD_TOKEN)
+logger.info('Connecting to Discord...')
+discordClient.login(process.env.DISCORD_TOKEN)
+
+discordClient.on('ready', () => {
+  logger.info(`Connected to Discord as ${discordClient.user.tag}`)
+})

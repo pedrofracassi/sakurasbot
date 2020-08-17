@@ -8,13 +8,18 @@ module.exports = class SakurasDiscordBot extends Client {
     this.twitch = options.twitch
 
     this.on('message', async message => {
+      this.logger.debug(`[${message.guild.name}] #${message.channel.name} <${message.author.tag}> ${message.content}`)
+
       if (message.author.bot) return
-      if (message.content === `<@!${this.user.id}>`) {
+      
+      if ([`<@!${this.user.id}>`, `<@${this.user.id}>`].includes(message.content) || message.content === '-stream') {
+        this.logger.info(`Bot invoked by ${message.author.tag} at #${message.channel.name} in ${message.guild.name}`)
+
         message.channel.startTyping()
-        const stream = await this.twitch.getRandomOnlinestream()
+        const stream = await this.twitch.getRandomOnlineStream()
         
         if (stream) {
-          await message.reply(`que tal a stream da **${stream.user_name}**?\n<https://twitch.tv/${stream.user_name}>`)
+          await message.reply(`que tal a stream da **${stream.user_name}**? Ela está online agora!\n<https://twitch.tv/${stream.user_name}>`)
         } else {
           await message.reply('nenhuma das nossas streamers está online no momento \:(')
         }
