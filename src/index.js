@@ -1,6 +1,10 @@
 const winston = require('winston')
 const logger = winston.createLogger()
 
+const TwitchAPI = require('./TwitchAPI')
+const StreamerPool = require('./StreamerPool')
+const SakurasDiscordBot = require('./SakurasDiscordBot')
+
 logger.add(new winston.transports.Console({
   format: winston.format.combine(
     winston.format.colorize(),
@@ -12,15 +16,13 @@ logger.add(new winston.transports.Console({
   level: process.env.LOGGING_LEVEL || 'silly'
 }))
 
-const TwitchAPI = require('./TwitchAPI')
 const twitch = new TwitchAPI({ logger })
+const pool = new StreamerPool({ logger, twitch, username: process.env.TWITCH_CONTROLLER_USERNAME })
+const discordClient = new SakurasDiscordBot({ logger, twitch, pool, })
 
-const SakurasDiscordBot = require('./SakurasDiscordBot')
-const discordClient = new SakurasDiscordBot({ twitch, logger })
+pool.initialize(10)
 
-logger.info('Connecting to Discord...')
-discordClient.login(process.env.DISCORD_TOKEN)
-
-discordClient.on('ready', () => {
-  logger.info(`Connected to Discord as ${discordClient.user.tag}`)
+pool.once('ready', () => {
+  logger.info('Connecting to Discord...')
+  discordClient.login(process.env.DISCORD_TOKEN)
 })

@@ -45,13 +45,10 @@ module.exports = class TwitchAPI {
       }
       return Promise.reject(error)
     })
-
-    this.logger.info('Loading streamers...')
-    this.streamers = fs.readFileSync('streamers.txt').toString().split('\r\n')
-    this.logger.info(`Loaded ${this.streamers.length} streamers`)
   }
 
   async refreshAccessToken () {
+    this.logger.debug('Refreshing Twitch Access Token')
     await this.idAxios.post('/oauth2/token', null, {
       params: {
         client_id: this.clientId,
@@ -64,18 +61,36 @@ module.exports = class TwitchAPI {
     })
   }
 
-  async getOnlineStreams () {
+  async getOnlineStreams (streamers) {
     return this.apiAxios.get('/streams', {
-      params: this.streamers.reduce((previous, current) => {
+      params: streamers.reduce((previous, current) => {
         previous.append('user_login', current)
         return previous
-      }, new URLSearchParams())
+      }, new URLSearchParams('?first=100'))
     }).then(res => res.data.data)
   }
 
-  async getRandomOnlineStream () {
-    const streams = await this.getOnlineStreams()
+  async getRandomOnlineStream (streamers) {
+    const streams = await this.getOnlineStreams(streamers)
     if (streams.length === 0) return null
     return (streams[Math.floor(Math.random() * streams.length)])
+  }
+
+  async getUser (user) {
+    return this.apiAxios.get('/users', {
+      params: {
+        login: user
+      }
+    }).then(res => res.data.data[0])
+  }
+
+  async getUserFollowing (user) {
+    const { id } = await this.getUser(user)
+    return this.apiAxios.get('/users/follows', {
+      params: {
+        from_id: id,
+        first: 100
+      }
+    }).then(res => res.data.data)
   }
 }
