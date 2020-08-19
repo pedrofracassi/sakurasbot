@@ -31,7 +31,7 @@ module.exports = class SakurasDiscordBot extends Client {
       if (message.author.bot) return
       
       if ([`<@!${this.user.id}>`, `<@${this.user.id}>`].includes(message.content) || message.content === '-stream') {
-        this.logger.info(`Bot invoked by <${message.author.tag}> at #${message.channel.name} in [${message.guild.name}]`)
+        this.logger.info(`Bot invoked on Discord by <${message.author.tag}> at #${message.channel.name} in [${message.guild.name}]`)
 
         message.channel.startTyping()
         const stream = await this.twitch.getRandomOnlineStream(this.pool.streamers)
