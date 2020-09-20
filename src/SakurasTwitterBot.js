@@ -28,10 +28,16 @@ module.exports = class SakurasTwitterBot extends Twit {
     })
 
     this.streamConnection.on('tweet', async tweet => {
+      if (!tweet.text.substring(tweet.display_text_range[0], tweet.display_text_range[1]).toLowerCase().contains('@sakurasbot')) return
       this.logger.info(`Bot invoked on Twitter by @${tweet.user.screen_name} https://twitter.com/${tweet.user.screen_name}/status/${tweet.id_str}`)
       const stream = await this.twitch.getRandomOnlineStream(this.pool.streamers)
+
+      const text = stream ?
+        `Oi, @${tweet.user.screen_name}! Que tal a stream da ${stream.user_name}? Ela está online agora!\n\nhttps://twitch.tv/${stream.user_name}` :
+        `Oi, @${tweet.user.screen_name}. Infelizmente, nenhuma das nossas streamers está online agora :(`
+
       this.post('statuses/update', {
-        status: `Oi, @${tweet.user.screen_name}! Que tal a stream da ${stream.user_name}? Ela está online agora!\n\nhttps://twitch.tv/${stream.user_name}`,
+        status: text,
         in_reply_to_status_id: tweet.id_str,
         auto_populate_reply_metadata: true
       }).catch(error => {
