@@ -16,7 +16,11 @@ module.exports = class SakurasTwitterBot extends Twit {
     this.streamConnection = this.stream('statuses/filter', { track: '@SakurasBot' })
 
     this.streamConnection.on('disconnect', disconnectMessage => {
-      this.logger.warn('Twitter Stream connection closed')
+      this.logger.warn('Twitter Stream connection closed', disconnectMessage)
+    })
+
+    this.streamConnection.on('reconnect', function (request, response, connectInterval) {
+      this.logger.warn('Attempting to reconnect to Twitter')
     })
 
     this.streamConnection.on('connect', request => {
@@ -28,7 +32,7 @@ module.exports = class SakurasTwitterBot extends Twit {
     })
 
     this.streamConnection.on('tweet', async tweet => {
-      if (!tweet.text.substring(tweet.display_text_range[0], tweet.display_text_range[1]).toLowerCase().contains('@sakurasbot')) return
+      if (tweet.display_text_range && !tweet.text.substring(tweet.display_text_range[0], tweet.display_text_range[1]).toLowerCase().includes('@sakurasbot')) return
       this.logger.info(`Bot invoked on Twitter by @${tweet.user.screen_name} https://twitter.com/${tweet.user.screen_name}/status/${tweet.id_str}`)
       const stream = await this.twitch.getRandomOnlineStream(this.pool.streamers)
 
