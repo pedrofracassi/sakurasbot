@@ -61,17 +61,17 @@ module.exports = class TwitchAPI {
     })
   }
 
-  async getOnlineStreams (streamers) {
+  async getOnlineStreams (streamers, game) {
     return this.apiAxios.get('/streams', {
       params: streamers.reduce((previous, current) => {
         previous.append('user_login', current)
         return previous
-      }, new URLSearchParams('?first=100'))
+      }, new URLSearchParams(`?first=100${game ? `&game_id=${game.id}` : ''}`))
     }).then(res => res.data.data)
   }
 
-  async getRandomOnlineStream (streamers) {
-    const streams = await this.getOnlineStreams(streamers)
+  async getRandomOnlineStream (streamers, game) {
+    const streams = await this.getOnlineStreams(streamers, game)
     if (streams.length === 0) return null
     return (streams[Math.floor(Math.random() * streams.length)])
   }
@@ -92,5 +92,13 @@ module.exports = class TwitchAPI {
         first: 100
       }
     }).then(res => res.data.data)
+  }
+
+  async getGame (name) {
+    return this.apiAxios.get('/games', {
+      params: {
+        name
+      }
+    }).then(res => res.data.data[0])
   }
 }
