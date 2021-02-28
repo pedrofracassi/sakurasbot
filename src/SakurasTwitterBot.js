@@ -32,7 +32,9 @@ module.exports = class SakurasTwitterBot extends Twit {
     })
 
     this.streamConnection.on('tweet', async tweet => {
+      console.log(tweet)
       if (tweet.display_text_range && !tweet.text.substring(tweet.display_text_range[0], tweet.display_text_range[1]).toLowerCase().includes(`@${process.env.TWITTER_USERNAME.toLowerCase()}`)) return
+      if (tweet.retweeted_status || tweet.quoted_status) return
       this.logger.info(`Bot invoked on Twitter by @${tweet.user.screen_name} https://twitter.com/${tweet.user.screen_name}/status/${tweet.id_str}`)
       const stream = await this.twitch.getRandomOnlineStream(this.pool.streamers)
 
