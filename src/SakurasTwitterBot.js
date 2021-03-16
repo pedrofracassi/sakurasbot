@@ -37,7 +37,7 @@ module.exports = class SakurasTwitterBot extends Twit {
       
       let game = null
       const gameMentionRegex = new RegExp(`@${process.env.TWITTER_USERNAME} (.*)`, 'i')
-      const displayText = tweet.text.substring(tweet.display_text_range[0], tweet.display_text_range[1])
+      const displayText = tweet.display_text_range ? tweet.text.substring(tweet.display_text_range[0], tweet.display_text_range[1]) : tweet.text
       if (gameMentionRegex.test(displayText)) {
         const gameName = gameMentionRegex.exec(displayText)[1]
         console.log('game name is', gameName)

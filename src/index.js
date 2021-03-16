@@ -21,7 +21,7 @@ const twitch = new TwitchAPI({ logger })
 const pool = new StreamerPool({ logger, twitch, username: process.env.TWITCH_CONTROLLER_USERNAME })
 const discordClient = new SakurasDiscordBot({ logger, twitch, pool, })
 
-pool.initialize(10)
+pool.initialize(process.env.STEIN_URL ? 90 : 10)
 
 pool.once('ready', () => {
   logger.info('Connecting to Discord...')
