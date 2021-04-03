@@ -27,7 +27,7 @@ module.exports = class SakurasDiscordBot extends Client {
     })
 
     this.on('message', async message => {
-      this.logger.debug(`[${message.guild.name}] #${message.channel.name} <${message.author.tag}> ${message.content}`)
+      this.logger.debug(`(DISCORD) [${message.guild.name}] #${message.channel.name} <${message.author.tag}> ${message.content}`)
 
       if (message.author.bot) return
 
@@ -63,5 +63,9 @@ module.exports = class SakurasDiscordBot extends Client {
 
       message.channel.stopTyping()
     })
+  }
+
+  login () {
+    super.login(process.env.DISCORD_TOKEN)
   }
 }

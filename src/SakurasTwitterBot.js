@@ -9,10 +9,14 @@ module.exports = class SakurasTwitterBot extends Twit {
       access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET
     })
 
-    this.logger = logger || console
+    this.logger = logger
     this.twitch = twitch
     this.pool = pool
 
+    this.streamConnection
+  }
+
+  start () {
     this.streamConnection = this.stream('statuses/filter', { track: `@${process.env.TWITTER_USERNAME}` })
 
     this.streamConnection.on('disconnect', disconnectMessage => {
@@ -20,7 +24,7 @@ module.exports = class SakurasTwitterBot extends Twit {
     })
 
     this.streamConnection.on('reconnect', function (request, response, connectInterval) {
-      this.logger.info('Attempting to reconnect to Twitter')
+      if (this.logger) this.logger.info('Attempting to reconnect to Twitter')
     })
 
     this.streamConnection.on('connect', request => {
@@ -40,7 +44,6 @@ module.exports = class SakurasTwitterBot extends Twit {
       const displayText = tweet.display_text_range ? tweet.text.substring(tweet.display_text_range[0], tweet.display_text_range[1]) : tweet.text
       if (gameMentionRegex.test(displayText)) {
         const gameName = gameMentionRegex.exec(displayText)[1]
-        console.log('game name is', gameName)
         game = await this.twitch.getGame(gameName)
 
         if (!game) return this.post('statuses/update', {
