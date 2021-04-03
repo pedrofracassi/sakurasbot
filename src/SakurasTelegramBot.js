@@ -8,6 +8,10 @@ module.exports = class SakurasTelegramBot extends Telegraf {
     this.twitch = twitch
     this.pool = pool
 
+    this.command('start', ctx => {
+      ctx.reply('Olá! Digite /stream para receber o link de uma streamer!')
+    })
+
     this.command('stream', async ctx => {
       this.logger.debug(`(TELEGRAM)${ctx.chat.title ? ` [${ctx.chat.title}]` : ''} <${ctx.from.username}> ${ctx.message.text}`)
 
