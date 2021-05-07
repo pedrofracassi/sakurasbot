@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/pedrofracassi/sakurasbot#readme",
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "discord.js": "^12.3.1",
     "telegraf": "^4.3.0",
     "twit": "^2.2.11",
